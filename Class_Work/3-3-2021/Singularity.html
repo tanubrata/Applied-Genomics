@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Singularity.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h2 id="instructions-for-setting-up-singularity-container-for-r-packages">Instructions for setting up Singularity Container for R packages</h2>
+<p>One of the greatest challenges of managing a large computing service is to manage many small files. For this reason, many HPC teams set a limit on the number of files that can be present in a specific partition.</p>
+<pre class="hljs"><code><div>[msk8@log-3 ~]$ myquota
+Hostname: log-3 at Tue Mar  2 23:45:06 EST 2021
+Filesystem   Environment   Backed up?   Allocation       Current Usage
+Space        Variable      /Flushed?    Space / Files    Space(%) / Files(%)
+/home        $HOME         Yes/No       50.0GB/30.7K       9.06GB(18.13%)/3265(10.63%)
+/scratch     $SCRATCH      No/Yes        5.0TB/1.0M     192.37GB(3.76%)/4935(0.47%)
+/archive     $ARCHIVE      Yes/No        2.0TB/20.5K    1433.88GB(70.01%)/7176(35.04%)
+</div></code></pre>
+<p>As you can see, we are only allowed 30,700 files in our home directory. This may seem like a lot, but once you start installing python and R packages the number of files increases very quickly.</p>
+<p>The solution to this problem is to use a <strong>container</strong>. A popular one is called <strong>Docker</strong> which you can install in any operating system. <a href="https://www.docker.com/">Docker</a>.</p>
+<p>HPC does not support Docker, instead we will be using <strong>Singularity</strong> which is very similar <a href="https://singularity.lbl.gov/">Singularity</a>.</p>
+<p>Here we will go through the steps of:</p>
+<ul>
+<li>create the container</li>
+<li>set R environment so all R packages are installed in the environment</li>
+<li>load the instance so we can use our R package.</li>
+</ul>
+<h2 id="creating-the-container">Creating the container</h2>
+<p>Instructions are borrowed from here [Singularity instructions](https://sites.google
+.com/a/nyu.edu/nyu-hpc/documentation/prince/packages/singularity-for-conda).</p>
+<p>First we will create a directory in our scratch directory to store the container.</p>
+<pre class="hljs"><code><div>[msk8@log-3 ~]$ mkdir /scratch/$USER/Rpackages
+[msk8@log-3 ~]$ ls -ld /scratch/$USER/Rpackages
+drwxr-sr-x 2 msk8 root 4096 Mar  2 23:09 /scratch/msk8/Rpackages/
+</div></code></pre>
+<p>Now we copy a container file. This will be essentially a large empty file. Pick any size you want. You can make more than one so don't feel like you have to have one large one.</p>
+<pre class="hljs"><code><div>[msk8@log-3 ~] cp /scratch/work/public/overlay-fs-ext3/overlay-5GB-3.2M.ext3.gz /scratch/$USER/Rpackages/
+[msk8@log-3 ~] gunzip /scratch/$USER/Rpackages/overlay-5GB-3.2M.ext3.gz
+[msk8@log-3 ~] ls -l /scratch/$USER/Rpackages/
+total 6500096
+-rw-r--r-- 1 msk8 root 6656000000 Mar  2 23:40 overlay-5GB-3.2M.ext3
+</div></code></pre>
+<p>This may take some time because it will need to unpack the large file.
+Now to run it, we will simply tell which operating (linux distribution) we would li
+ke the partition to run.</p>
+<pre class="hljs"><code><div>[msk8@log-3 ~] singularity exec \
+--overlay /scratch/$USER/Rpackages/overlay-5GB-3.2M.ext3 \
+/scratch/work/public/singularity/ubuntu-20.04.1.sif \
+/bin/bash
+
+Singularity&gt; 
+</div></code></pre>
+<p>Now we are in the singularity instance and we know this because of the <strong>Singularity</strong> prompt.</p>
+<h2 id="installing-conda">Installing conda.</h2>
+<p><a href="https://docs.conda.io/en/latest/index.html">Conda</a> is a package manager that can help you install many different types of applications, including those for analyzing genomic data using <a href="https://bioconda.github.io/"><strong>bioconda</strong></a>.  Some of the following steps are taken from the Bioconda website.</p>
+<p>First download the installation script.</p>
+<pre class="hljs"><code><div>Singularity&gt; curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 89.8M  100 89.8M    0     0   177M      0 --:--:-- --:--:-- --:--:--  177M
+</div></code></pre>
+<p>Now run it, but tell it to install it in our <strong>/ext3</strong> directory. This directory will be where we will put all our files that will be accessible only in the Singularity instance.</p>
+<pre class="hljs"><code><div>Singularity&gt; sh Miniconda3-latest-Linux-x86_64.sh -b -p /ext3/miniconda3
+PREFIX=/ext3/miniconda3
+Unpacking payload ...
+Collecting package metadata (current_repodata.json): done                          
+Solving environment: done
+
+## Package Plan ##
+…
+
+</div></code></pre>
+<p>Lots of packages will be listed here. In order to make it easy to load the conda environment everytime we start the singularity instance, let's create a helper script.</p>
+<p>Create a file in your /ext3 called <strong>env.sh</strong>. Whenever you want to load the conda environment, simply type <strong>source /ext3/env.sh</strong></p>
+<pre class="hljs"><code><div>#!/bin/bash
+
+source /ext3/miniconda3/etc/profile.d/conda.sh
+export PATH=/ext3/miniconda3/bin:$PATH
+</div></code></pre>
+<p>Now let's set the conda channels so conda knows where to look when we try to install a package.</p>
+<pre class="hljs"><code><div>
+Singularity&gt; conda config --add channels defaults
+Warning: 'defaults' already in 'channels' list, moving to the top
+Singularity&gt; conda config --add channels bioconda
+Singularity&gt; conda config --add channels conda-forge
+
+</div></code></pre>
+<p>Conda allows you to create different environments where you can install applications that you suspect may conflict with each other or simply group them based on a particular task. The main environment is called base. We will continue using this for now.</p>
+<pre class="hljs"><code><div>Singularity&gt; conda env list
+# conda environments:
+#
+base                  *  /ext3/miniconda3
+</div></code></pre>
+<p>To create a new environment you can simply type</p>
+<pre class="hljs"><code><div>conda create -n envname
+</div></code></pre>
+<p>Where <strong>envname</strong> is anything you want to call you r environment.</p>
+<p>To see all the applications that are installed in the environment, simply type</p>
+<p>You change environments using</p>
+<pre class="hljs"><code><div>conda activate
+</div></code></pre>
+<p>and to change leave the environment you type</p>
+<pre class="hljs"><code><div>conda deactivate
+</div></code></pre>
+<pre class="hljs"><code><div>conda list
+</div></code></pre>
+<p>See the link provided above for a full list of commands that are available. Here we will use <strong>base</strong>.</p>
+<h2 id="installing-r">Installing R</h2>
+<p>First we will update conda and then simply install <strong>r-base</strong></p>
+<pre class="hljs"><code><div>Singularity&gt; conda update --prefix /ext3/miniconda3 conda
+Singularity&gt; conda install r-base
+
+</div></code></pre>
+<p>Now to start R, we will simply type <strong>R</strong> in the prompt to get a console.
+To make sure our packages will be installed in /ext3, we will use the function <strong>.libPaths()</strong>.</p>
+<pre class="hljs"><code><div>Singularity&gt; R
+
+R version 4.0.3 (2020-10-10) -- &quot;Bunny-Wunnies Freak Out&quot;
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-conda-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+&gt; .libPaths()
+[1] &quot;/ext3/miniconda3/lib/R/library&quot;
+
+</div></code></pre>
+<p>This is great. We now have a container with a functional installation of <strong>R</strong> where we can install packages.</p>
+<p>Now let's see how we can use this container. We will create a simple R script which we will execute by starting our singularity instance.</p>
+<p>First exit R</p>
+<pre class="hljs"><code><div>&gt; q()
+Save workspace image? [y/n/c]: n
+</div></code></pre>
+<p>Now exit Singularity</p>
+<pre class="hljs"><code><div>Singularity&gt; exit
+exit
+[msk8@log-3 ~]$ 
+</div></code></pre>
+<p>Now create a file that generates a histogram of random values obtained using <strong>rnorm</strong> function and call it <strong>hist.R</strong></p>
+<pre class="hljs"><code><div>data = rnorm(100)
+png(&quot;hist.png&quot;)
+hist(data)
+dev.off()
+</div></code></pre>
+<p>Since we will be running a command, let's start an interactive session.</p>
+<pre class="hljs"><code><div>[msk8@log-3 ~]$ srun --account=class --mem 16GB --cpus-per-task 1 -t 2:00:00 --pty /bin/bash
+[msk8@cm17 ~]$ 
+</div></code></pre>
+<p>Now we will start Singularity as before but provide a command to run the script.</p>
+<pre class="hljs"><code><div>[msk8@cm17 ~]$ singularity \
+&gt;     exec --overlay /scratch/$USER/Rpackages/overlay-5GB-3.2M.ext3:ro \
+&gt; /scratch/work/public/singularity/ubuntu-20.04.1.sif \
+&gt; /bin/bash -c &quot;source /ext3/env.sh; \
+&gt; Rscript /home/msk8/hist.R&quot;
+null device 
+          1 
+[msk8@cm17 ~]$ ls -l hist*
+-rw-r--r-- 1 msk8 msk8 2831 Mar  3 01:44 hist.png
+-rw-rw-r-- 1 msk8 msk8   55 Mar  3 01:34 hist.R
+</div></code></pre>
+<p>Notice that we did not have to use any <strong>module load r</strong> functions.  Also notice the <strong>:ro</strong> after the .ext3 file name. This means the instance  is opened with read only permission. This is essential when putting this in a slurm script.</p>
+
+</body>
+</html>
