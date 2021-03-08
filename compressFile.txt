@@ -1,0 +1,8 @@
+to extract tar.gz file in current directory:
+$ tar -xvf archive.tar.gz (archive = filename)
+
+to create a tar.gz file:
+$tar -czf archive.tar.gz file1 file2 ... (archive = filename)
+
+to unxip a gz file:
+gunzip filename
