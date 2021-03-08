@@ -1,0 +1,20 @@
+ag
+├── agweek2
+│   ├── KCL_1.fastq
+│   ├── KCL_1_fastqc.html
+│   └── KCL_1_fastqc.zip
+├── week_1_linux_intro
+│   ├── assignment
+│   │   ├── data
+│   │   │   └── flybase_r6.gtf
+│   │   └── result
+│   │       └── head_of_gtf.txt
+│   └── lecture_exercise
+│       ├── Ath-t10.txt
+│       ├── Cassavagenes.txt
+│       ├── Genes.txt
+│       └── numberofgenes.txt
+└── week_2_slurm_jobs
+
+7 directories, 9 files
+Sat Feb 13 19:54:23 EST 2021

@@ -1,0 +1,7 @@
+X	FlyBase	gene	19961297	19969323	.	+	.	gene_id "FBgn0031081"; gene_symbol "Nep3";
+X	FlyBase	mRNA	19961689	19968479	.	+	.	gene_id "FBgn0031081"; gene_symbol "Nep3"; transcript_id "FBtr0070000"; transcript_symbol "Nep3-RA";
+X	FlyBase	5UTR	19961689	19961845	.	+	.	gene_id "FBgn0031081"; gene_symbol "Nep3"; transcript_id "FBtr0070000"; transcript_symbol "Nep3-RA";
+X	FlyBase	exon	19961689	19961845	.	+	.	gene_id "FBgn0031081"; gene_symbol "Nep3"; transcript_id "FBtr0070000"; transcript_symbol "Nep3-RA";
+X	FlyBase	exon	19963955	19964071	.	+	.	gene_id "FBgn0031081"; gene_symbol "Nep3"; transcript_id "FBtr0070000"; transcript_symbol "Nep3-RA";
+X	FlyBase	exon	19964782	19964944	.	+	.	gene_id "FBgn0031081"; gene_symbol "Nep3"; transcript_id "FBtr0070000"; transcript_symbol "Nep3-RA";
+X	FlyBase	exon	19965006	19965126	.	+	.	gene_id "FBgn0031081"; gene_symbol "Nep3"; transcript_id "FBtr0070000"; transcript_symbol "Nep3-RA";
