@@ -1,0 +1,3 @@
+This was an independent Final Group Project for this course. My partner for the project was Mario.
+We selected a Liver study dataset from GEO database with accession number GSE143318 where liver samples were collected from both healthy individuals and patients suffering from Severe Alcoholic Hepatitis (SAH).
+We analyzed those raw RNASeq data by using **Differential Gene Expression Analysis, Enrichment Analysis and Alternative Splicing Analysis**. We used various tools including **FastQC, Trimmomatic, STAR, Kallisto, HTSeq, Picard**, and various **R bioconductor packages including LIMMA, GSEA, KEGG etc.**
