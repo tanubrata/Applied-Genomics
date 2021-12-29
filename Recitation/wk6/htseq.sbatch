@@ -7,7 +7,7 @@
 #SBATCH --job-name=htseq
 #SBATCH --mail-type=END
 #SBATCH --account=class
-#SBATCH --mail-user=ycc520@nyu.edu
+#SBATCH --mail-user=td2201@nyu.edu
 #SBATCH --output=slurm_%j.out
 
 module purge
