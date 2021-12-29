@@ -1,0 +1,13 @@
+{
+	"n_targets": 137436,
+	"n_bootstraps": 0,
+	"n_processed": 35115090,
+	"n_pseudoaligned": 18578392,
+	"n_unique": 10020717,
+	"p_pseudoaligned": 52.9,
+	"p_unique": 28.5,
+	"kallisto_version": "0.46.1",
+	"index_version": 10,
+	"start_time": "Sat Apr  3 18:09:38 2021",
+	"call": "kallisto quant -i GRCm39 -o ../result/kallisto/SRR3831026 ../data/SRR3831026_1.fastq ../data/SRR3831026_2.fastq"
+}

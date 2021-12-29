@@ -1,0 +1,13 @@
+"run_id","genotype","biorep_id","techrep_id"
+"SRR3831024","WT",1,1
+"SRR3831025","WT",1,2
+"SRR3831026","WT",2,1
+"SRR3831027","WT",2,2
+"SRR3831028","WT",3,1
+"SRR3831029","WT",3,2
+"SRR3831030","PbxMut",1,1
+"SRR3831031","PbxMut",1,2
+"SRR3831032","PbxMut",2,1
+"SRR3831033","PbxMut",2,2
+"SRR3831034","PbxMut",3,1
+"SRR3831035","PbxMut",3,2

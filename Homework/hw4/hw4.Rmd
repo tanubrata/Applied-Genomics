@@ -1,0 +1,366 @@
+---
+title: "Hw4_RNA Seq"
+author: "Tanubrata Dey"
+date: "4/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r library}
+library(dplyr)
+library(biomaRt)
+library(edgeR)
+library(limma)
+```
+
+
+## Know your data
+
+The data is retrieved from [GEO dataset](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE84271). From the information provided in the website and/or the original article where the dataset was reported, answer the following questions:
+
+1. What is the sample? Include the species and cell type. This information tells you the reference genome that should be used and allows you to expect the expression of certain genes in experiments properly performed. (3%)
+
+Tissues from embryonic spinal cord. Mus musculus (mouse). Examination of embryonic spinal cord motor neurons expression in thoracic and brachial levels. Control and Pbx mutant.  
+
+2. What is the protocol/reagent used to amplify the cDNA and generate the library? This information is usually provided in the pages for individual samples but not in the main page. It allows you to select the adapter and primer sequences to use when trimming the data. (3%)
+
+cDNA was amplified using Nugene's Ovation RNA-Seq System V2 kit (Part No. 7102).amplified for 10 cycles of PCR. 
+
+3. What is the read length? With the growing popularity of long-read sequencing technique, it is also important to know which platform was used to sequence the samples. (3%)
+
+The samples were mixed into two pools and run on two 50-nucleotide paired end read rapid run flow cell lanes with the Illumina HiSeq 2500 sequencer. Generating on average 74 and 101 million reads passing filter for brachial and thoracic samples respectively.
+
+4. If the samples are sequenced with Illumina platform, are they pair-ended or single-ended? (3%)
+
+pair-ended
+
+5. Is the library strand-specific? This is dependent on the kit used to generate the library, so check the manufacturer's website. (3%)
+
+yes
+
+
+
+## Alignment & read counting
+
+You'll need to submit the sbatch file for read mapping with `Kallisto` (5%) and the rate of pseudoalignment for each sample (can be found as `p_pseudoaligned` in `run_info.json`, 5%).
+
+SRR3831024 : 53.6
+SRR3831025 : 53.7
+SRR3831026 : 52.9
+SRR3831027 : 52.9
+SRR3831028 : 53.7
+SRR3831029 : 53.7
+SRR3831030 : 55.9
+SRR3831031 : 55.9
+SRR3831032 : 57.2
+SRR3831033 : 57.2
+SRR3831034 : 53.4
+SRR3831035 : 53.4
+
+## Generate design matrix from metadata (5%)
+
+In this assignment, we mainly care about differences between genotypes, so let's generate a design matrix containing this information. See the lecture for details about a design matrix.
+
+```{r}
+x <- read.csv("metadata.csv")
+x
+
+a <- x$genotype
+
+a_updated <- as.factor(a)
+class(a_updated)
+a_updated <- relevel(a_updated, "WT")
+
+design <- model.matrix(~a_updated)
+design
+```
+
+## Prepare gene-count matrix (10%)
+
+```{r}
+counts_tb <- read.csv("all_genes.csv", header=TRUE, sep=",")
+```
+
+```{r}
+# Remove the version number
+counts_tb$target_id <- gsub("\\..*", "", counts_tb$target_id)
+```
+
+### Convert the transcript ids to gene ids/symbols
+
+```{r}
+# Load the conversion table
+txgtf <- readRDS("txkey.rds")
+counts_tb <- merge(txgtf, counts_tb, 
+                   by.x = "transcript_id",
+                   # In case your transcript name column is not target_id,
+                   # you should change this line below
+                   by.y = "target_id")
+
+# Aggregate transcript counts from the same gene to get counts per gene
+counts_gene <- group_by(counts_tb, gene_id) %>%
+  dplyr::select(-transcript_id) %>%
+  summarize_all(sum)
+
+
+
+# Drop the gene id column
+counts <- as.data.frame(counts_gene[ , -1])
+row.names(counts) <- counts_gene$gene_id
+
+head(counts)
+```
+
+### Convert Ensembl gene ids to Entrez/NCBI gene ids
+
+```{r}
+# Convert Ensembl ids to Entrez ids to allow GSEA and GO
+
+## Establish connection with Ensembl, an online database
+## and ask for mouse-related data
+ensembl <- useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+
+## My Voom-processed object is called bra_v, and you'll need to edit.
+## getBM performs batch query with your input value: row.names(bra_v)
+## and retrieves the corresponding attributes from Ensembl
+entrez_id <- getBM(
+  # Attributes are the type of converted data
+  attributes = c("entrezgene_id", "ensembl_gene_id"),
+  # Filter is the type of input data
+  filter = "ensembl_gene_id",
+  # Values is the input data
+  values = row.names(counts),
+  # Mart is the conversion database by useMart()
+  mart = ensembl
+)
+
+
+## Check the content of entrez_id by head()
+## We are creating a named vector here, where the names are Ensembl ids
+## and the values are Entrez ids
+conv_dict <- entrez_id$entrezgene_id
+names(conv_dict) <- entrez_id$ensembl_gene_id
+
+## You can later use this to rename your DGEList
+## row.names(dge) <- conv_dict[row.names(dge)]
+## !!Do this after you are done with non-specific filtering!!
+```
+
+```{r}
+head(entrez_id)
+```
+
+## Filter the sample & TMM normalization
+
+```{r}
+genelevel_counts <- counts
+dge <- DGEList(counts=genelevel_counts)
+dim(dge)
+```
+Please only keep genes with more than 1 CPM in at least 6 samples. What is the ratio of genes that are kept?
+
+```{r}
+isexpr <- rowSums(cpm(dge) > 1) >=6
+sum(isexpr)/nrow(dge) #fraction of genes kept
+
+dge <- dge[isexpr,,keep.lib.sizes=FALSE] 
+dim(dge)
+```
+
+```{r}
+## !!Do this after you are done with non-specific filtering!!
+row.names(dge) <- conv_dict[row.names(dge)]
+```
+
+
+## TMM normalization
+```{r}
+dge <- calcNormFactors(dge, method="TMM")
+```
+
+
+## Model mean-variance relationship with Voom
+
+```{r}
+v <- voom(dge,design,plot=TRUE)
+```
+
+### Plot an MDS plot to see observe the samples (5%)
+
+```{r}
+plotMDS(v, main="plotMDS(v)",cex=0.5,col=c(rep("red",6),rep("green",6)))
+#plotMDS(v, main="plotMDS(v)",cex=0.5,col=c(rep("red",3),rep("green",3),rep("blue",3),rep("black",3)))
+```
+
+Please describe your expectation of (1) how replicates should be like in an MDS plot (2) how different genotypes should be like in an MDS plot. Then, plot it with `plotMDS()` and describe what you see. Is your prediction consistent with what you see?
+
+## Fit linear model and Naive Bayes model with Limma
+
+Limma finds differential expression by fitting linear models with `lmFit()`, and then calculate the statistics with `eBayes()`. Please perform the analysis and plot an MA plot with `plotMA()`. What do you see? 
+
+```{r}
+#linear model
+fit <- lmFit(v,design)
+```
+
+
+```{r}
+#ebayes stat
+fit2  <- eBayes(fit)
+colnames(fit2)
+```
+
+```{r}
+#since plotMA and plotMD is the same thing, I did plotMD.
+plotMD(fit2, main="plotMD(fit2)", cex=0.5, coef="a_updatedPbxMut")
+```
+
+### List top differentially expressed genes
+
+After you are done with differential expression analysis, the list of differentially expressed genes can be retrieved with `topTable()`. Please save the differentially expressed genes that has an adjusted p-value < 0.05 as a csv file and submit it to NYU Classes.
+
+```{r}
+R_WT_vs_PbxMut = topTable(fit2, coef="a_updatedPbxMut", number=nrow(dge$counts))
+```
+
+
+
+```{r}
+dim(R_WT_vs_PbxMut[R_WT_vs_PbxMut$adj.P.Val <= 0.05,])
+head(R_WT_vs_PbxMut)
+```
+
+```{r}
+library(WriteXLS)
+```
+
+
+```{r}
+sigGenes = list()
+sigGenes[["R_WT_vs_PbxMut"]] = R_WT_vs_PbxMut
+
+sigGenes_fdr05 = lapply(sigGenes, function(y) y[y[,"adj.P.Val"]<=0.05,])  
+lapply( sigGenes_fdr05, nrow)
+
+```
+
+```{r}
+#create excel file of differentially expressed genes
+#WriteXLS("sigGenes_fdr05",ExcelFileName=paste("expression_genelevel_WT_vs_PbxMut.xls",  sep=""),row.names=T, FreezeRow=1,FreezeCol=1,AdjWidth=F)
+```
+
+
+
+### GSEA
+
+```{r}
+load(file="mouse_H_v5p2.rdata")
+```
+
+
+```{r}
+C2t <- ids2indices(Mm.H, rownames(v))
+```
+
+
+```{r}
+rr <- romer(v,C2t,design=design,contrast=2,nrot=1000)      # ideally, should do >= 1000 rotations
+romerUP_rr=topRomer(rr,n=10,alt="up")
+romerDN_rr=topRomer(rr,alt="down")
+romerMIXED_rr=topRomer(rr,alt="mixed")
+```
+
+```{r}
+romerUP_rr #top 10
+
+romerDN_rr #bottom
+
+romerMIXED_rr
+```
+
+### GO enrichment analysis
+
+Another useful gene annotation is gene ontology. To perform GO term enrichment test, `limma` provides a function, `goana`. To use the function, you need `GO.db`,  `org.Mm.eg.db`, and `BiasedUrn` for GO term information, so make sure they are installed from Bioconductor.
+
+`goana()` takes the output of `eBayes()`, and to correct for gene abundance and length, you need to set `trend = TRUE`.
+
+Perform GO enrichment analysis with an FDR threshold of 0.05, and print the top 10 enriched biological process terms (BP) for up-regulated and down-regulated genes with `topGO()` (7.5% each).
+
+
+```{r}
+library(GO.db)
+library(org.Mm.eg.db)
+library(BiasedUrn)
+```
+
+```{r}
+go_term <- goana(fit2, geneid = rownames(fit2), species = "Mm", FDR = 0.05, trend = TRUE)
+
+head(go_term)
+
+top_go_term <- topGO(go_term, ontology="BP", number = 10L)
+
+top_go_term
+  
+```
+
+
+
+
+### What do you learn from GSEA and GO (bonus 10%, total points capped at 100)
+
+Checking the enriched terms and gene sets, what do you learn from it? Can you make an educated guess about what Pbx is doing in spinal motor neurons?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
