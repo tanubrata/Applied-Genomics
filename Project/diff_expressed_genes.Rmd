@@ -1,0 +1,399 @@
+---
+title: "Differential Expression & Enrichment Analysis"
+author: "Tanubrata Dey"
+date: "4/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Loading the required libraries for RNA seq
+
+```{r library}
+library(dplyr)
+library(biomaRt)
+library(edgeR)
+library(limma)
+library(rtracklayer)
+library(pheatmap)
+library(pathview)
+```
+
+
+
+
+
+#### Loading and selecting desired data from annotation file.
+
+```{r}
+gtf_file <- as.data.frame(rtracklayer::readGFF("human_transcript_only.gtf"))
+human_genes <- gtf_file[ , c("gene_id", "gene_name")]
+human_gtf <- gtf_file[ , c("gene_id", "transcript_id")]
+```
+
+##### Drop the duplicated rows from the gene_id, gene_name in human_genes df
+
+```{r}
+human_genes <- human_genes[!duplicated(human_genes$gene_id), ]
+```
+
+
+#### creating the design matrix for our analysis. 
+
+```{r}
+metadata <- data.frame(
+  run_id = paste0("SRR108531", c(47:56)),
+  genotype = c(rep("WT", 5), rep("SAH", 5)),
+  biorep_id = c(rep(c(1:5)), rep(c(1:5)))
+)
+```
+
+
+##### we are only focusing on genotype since we are interested to see differences between WT and SAH.
+
+```{r}
+metadata$genotype <- as.factor(metadata$genotype)
+metadata$genotype <- relevel(metadata$genotype, "WT")
+
+design <- model.matrix(~genotype, metadata)
+print(design)
+```
+
+
+
+#### Loading the kallisto results for gene count in counts_tb df.
+
+```{r}
+counts_tb <- read.csv("data/all_genes.csv", header=TRUE, sep=",")
+```
+
+#### Removing the version numbers from transcript id
+
+```{r}
+# Remove the version number from transcript_id
+counts_tb$target_id <- gsub("\\..*", "", counts_tb$target_id)
+```
+
+
+#### Merging the annotation file containing gene_id and transcript_id with the counts file df.
+
+```{r}
+# Load the conversion table
+#merge the gtf and counts table on transcript id
+counts_tb <- merge(human_gtf, counts_tb, 
+                   by.x = "transcript_id",
+                   # In case your transcript name column is not target_id,
+                   # you should change this line below
+                   by.y = "target_id")
+
+```
+
+
+```{r}
+
+# Aggregate transcript counts from the same gene to get counts per gene
+counts_gene <- group_by(counts_tb, gene_id) %>%
+  dplyr::select(-transcript_id) %>%
+  summarize_all(sum)
+
+```
+
+
+```{r}
+# Drop the gene id column
+counts <- as.data.frame(counts_gene[ , -1])
+row.names(counts) <- counts_gene$gene_id
+
+head(counts)
+```
+
+
+
+#### Create a DGElist using our counts df.
+
+```{r}
+
+dge <- DGEList(counts = counts)
+dim(dge)
+
+## Keep genes with more than 1 CPM in at least 3 samples
+isexpr <- rowSums(cpm(dge) > 1) > 3
+sum(isexpr)/nrow(dge)
+
+```
+
+#### Dropping the filtered genes
+
+```{r}
+dge <- dge[isexpr, , keep.lib.size = FALSE]
+dim(dge)
+```
+#### Performing TMM Normalization
+
+```{r}
+dge <- calcNormFactors(dge, method="TMM")
+```
+
+#### Generating voom and voomplot.
+
+```{r}
+v <- voom(dge, plot = TRUE)
+```
+#### Doing a Density plot for the voom
+
+```{r}
+# density plots
+plotDensities(v, main="Density plot from Voom", legend = "topright")
+```
+
+
+#### Doing an MDSplot
+
+```{r}
+plotMDS(v, main="MDS plot for Voom",cex=0.5,col=c(rep("blue",5),rep("red",5)))
+```
+
+#### Fitting a linear model using lmfit()
+
+```{r}
+fit <- lmFit(v,design)
+```
+
+#### Doing ebayes stat on lmfit() df
+
+```{r}
+fit2  <- eBayes(fit)
+colnames(fit2)
+```
+
+#### MA plot
+
+```{r}
+plotMD(fit2, main="MA plot", cex=0.5, coef="genotypeSAH")
+```
+#### Getting the differentially expressed genes using topTable
+
+```{r}
+library(data.table)
+```
+
+
+##### List top differentially expressed genes
+
+```{r}
+WT_vs_SAH = topTable(fit2, coef="genotypeSAH", number=nrow(dge$counts))
+
+WT_vs_SAH = filter(WT_vs_SAH, adj.P.Val < 0.05)
+
+#converting the row name into a column
+R_WT_vs_SAH = setDT(WT_vs_SAH, keep.rownames = "gene_id")[]
+
+```
+
+```{r}
+R_WT_vs_SAH <- merge(human_genes, R_WT_vs_SAH, 
+                   by.x = "gene_id",
+                   # In case your transcript name column is not target_id,
+                   # you should change this line below
+                   by.y = "gene_id")
+```
+
+
+```{r}
+write.csv(R_WT_vs_SAH, "WT_vs_SAH_fdr0.05.csv")
+
+```
+
+
+#### Clustering plot
+
+```{r fig1, fig.height = 14, fig.width = 5}
+# heatmap
+df = R_WT_vs_SAH  # For this example, we select genes based only this constrast here (oxidative stress vs control in wild type)
+
+df = df %>%  filter(adj.P.Val <= 0.05 & (logFC >= log2(4.0) | logFC <= log2(1/4.0)) )   # restrict to genes with FDR 0.5% and FC more than 4.0
+
+dexpr = v$E  # get log expression data from voom function output
+#dexpr = dexpr[,c('Col_paral_Root_1','Col_para_Root_2','Col_para_Root_3','Col_ctrl_Root_1','Col_ctrl_Root_2','Col_ctrl_Root_3')] # select relevant columns
+
+dexpr = dexpr[rownames(dexpr) %in% as.character(df$gene_id), ]
+
+pheatmap(as.matrix(dexpr),  cluster_rows=TRUE, cluster_cols=TRUE, main="FDR < 0.5% & >4-fold", 
+			scale = "row",
+			gaps_col = gaps_col, 
+			clustering_distance_cols = "correlation", 
+#			cutree_cols = 2, 
+#			treeheight_col = 20,
+			border_color = FALSE, legend = TRUE, legend_labels = "up-/down- regulated",height=20, color=colorRampPalette(c("darkgreen", "black", "red"))(500)) 
+```
+
+
+***
+
+##### Redoing from voom after converting to entrez_id
+
+```{r}
+hgnc_annote <- read.csv("./data/hgnc.csv", header = TRUE)
+```
+
+```{r}
+entrez_id <- hgnc_annote[ , c("EnsemblID", "Entrez_ID")]
+```
+
+```{r}
+counts_gene1 <- merge(entrez_id, counts_gene, by.x = "EnsemblID", by.y = "gene_id")
+```
+
+```{r}
+entrez_id <- counts_gene1[ , c("EnsemblID", "Entrez_ID")]
+conv_dict <- entrez_id$Entrez_ID
+names(conv_dict) <- entrez_id$EnsemblID
+```
+
+
+
+
+
+```{r}
+# Load the count matrix as DGEList
+bra <- DGEList(counts = counts)
+dim(bra)
+
+## Keep genes with more than 1 CPM in at least 6 samples
+expr <- rowSums(cpm(bra) > 1) > 3
+sum(expr)/nrow(bra)
+```
+
+```{r}
+bra <- bra[expr, , keep.lib.size = FALSE]
+dim(bra)
+
+row.names(bra) <- conv_dict[row.names(bra)]
+
+## TMM normalization
+bra <- calcNormFactors(bra)
+```
+```{r}
+bra_v <- voom(bra, plot = FALSE)
+```
+
+
+```{r}
+bra_fit <- lmFit(bra_v, design)
+bra_fit2 <- eBayes(bra_fit)
+```
+
+
+
+```{r}
+colnames(bra_fit2)
+```
+
+```{r}
+deg = topTable(bra_fit2, coef="genotypeSAH", number=nrow(bra$counts))
+
+deg = filter(deg, adj.P.Val < 0.05)
+```
+
+
+
+
+
+
+### GSEA
+
+#### Loading the hallmark gene sets for humans
+
+```{r}
+load("data/human_H_v5p2.rdata")
+```
+
+```{r}
+c2t <- ids2indices(Hs.H, row.names(bra_v))
+```
+
+#### Performing Romer() for GSEA
+
+```{r}
+rr <- romer(bra_v, c2t, design = design, nrot=1000)
+```
+
+
+```{r}
+romerUP <- topRomer(rr, n=10, alt = "up")
+print(romerUP)
+```
+
+
+```{r}
+romerDOWN <- topRomer(rr, n = 10, alt = "down")
+print(romerDOWN)
+```
+
+```{r}
+romerMIX <- topRomer(rr, n = 10, alt = "mixed")
+print(romerMIX)
+```
+
+
+### GO-Term Enrichment
+
+```{r}
+library(GO.db)
+library(org.Hs.eg.db)
+library(BiasedUrn)
+```
+
+```{r}
+gotest <- goana(bra_fit2, coef = 2, species = "Hs", trend = TRUE, FDR = 0.05)
+```
+
+
+```{r}
+gotest_bp_up <- topGO(gotest, ontology = "BP", number = 10, sort = "Up")
+print(gotest_bp_up)
+```
+
+
+```{r}
+gotest_bp_down <- topGO(gotest, ontology = "BP", number = 10, sort = "Down")
+print(gotest_bp_down)
+```
+
+
+
+### KEGG Analysis
+
+```{r}
+kegg_test <- kegga(bra_fit2, coef = 2, species = "Hs", trend = TRUE, FDR = 0.05)
+```
+
+```{r}
+kegg_test_up <- topKEGG(kegg_test, number = 20, sort = "Up")
+print(kegg_test_up)
+```
+
+
+```{r}
+kegg_test_down <- topKEGG(kegg_test, number = 20, sort = "Down")
+print(kegg_test_down)
+```
+
+
+
+```{r}
+foldchange <- deg$logFC
+names(foldchange) <- deg$ID
+head(foldchange)
+```
+
+```{r}
+pathview(gene.data = foldchange, pathway.id = c("hsa00260","hsa01200"), species = "hsa", map.symbol = F)
+```
+
+
+
+
+

@@ -1,0 +1,32 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+***
+Merge the count_gene with human genes annotation df on gene_id s
+
+```{r}
+counts_diff <- merge(human_genes, counts_gene, 
+                   by.x = "gene_id",
+                   # In case your transcript name column is not target_id,
+                   # you should change this line below
+                   by.y = "gene_id")
+```
+
+```{r}
+
+counts_differential <- group_by(counts_diff, gene_name) %>%
+  dplyr::select(-gene_id)%>%
+  summarize_all(sum)
+
+```
+
+```{r}
+# Drop the gene name column
+counts_d <- as.data.frame(counts_differential[ , -1])
+row.names(counts_d) <- counts_differential$gene_name
+
+head(counts_d)
+```
+***
