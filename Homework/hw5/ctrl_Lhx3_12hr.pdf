@@ -1,0 +1,75 @@
+	    
+<!DOCTYPE html>
+<html lang=”en”>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>NYU Login</title>
+
+        <link rel="icon" href="/idp/images/nyu_favicon.png" type="image/x-icon"/>
+        <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="/idp/css/custom-common.css">
+        <link rel="stylesheet" type="text/css" href="https://cloud.typography.com/7436432/6151412/css/fonts.css">
+        <link rel="stylesheet" type="text/css" href="/idp/css/new-login.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="/idp/js/nyu-message.js"></script>
+    </head>
+    <body style="display: grid; min-height: 0%;">
+        
+        <div class="nyu-message">
+            <div class="wrap">
+                <p>
+                <a href="" class="message"></a>
+                </p>
+                <a href="" class="nyu-message-more right uppercase rounded">More</a>
+            </div>
+        </div>
+
+
+    <!-- page Content-->
+
+    <div class="container-fluid body-wrapper" style="margin-top: 5%;">
+            <div class="row">
+                <div class="col-md-12" style="padding-rigth:0px;padding-left:0px;">
+    
+                    <!-- content -->
+                    <div class="container col-xs-10 col-sm-6 col-md-6 col-lg-4 col-centered wr-content wr-login col-centered">
+                        <div class="titleDiv">
+                            <div>
+                            <img src="/idp/images/NYU-Logo.png" class="nyuLogo" alt="New York University"/>
+                            </div>
+                            <div>
+                                <h1 class="wr-title uppercase blue-bg padding-double white boarder-bottom-blue margin-none">
+                                    Log In to Your NYU Account 
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="boarder-all ">
+                            <div class="clearfix"></div>
+                            <div class="padding-double login-form">
+                                <h1>Error</h1>
+				                <p> <p>You may be seeing this page because you used the Back button while browsing a secure web site or application. Alternatively, you may have mistakenly bookmarked the web login form instead of the actual web site you wanted to bookmark or used a link created by somebody else who made the same mistake.</p> <br/> <p>Left unchecked, this can cause errors on some browsers or result in you returning to the web site you tried to leave, so this page is presented instead.</p></p>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <div class="needHelp">
+                            <div class="pwmLinks">
+                                <div><a href="https://qa.start.it.nyu.edu/pwm/public/forgottenpassword" target="_blank">Forgot Password</a></div>
+                                <div><a href="https://qa.start.it.nyu.edu/pwm/public/forgottenusername" target="_blank">Forgot NetID</a></div>
+                                <div><a href="https://qa.start.it.nyu.edu/pwm/public/activate" target="_blank">Activate NetID</a></div>
+                                <div><a href="https://www.nyu.edu/accessibility" target="_blank">Accessibility</a></div>
+                            </div>
+                            <p><b>Note:</b> To securely and completely log out of your NYU account when done, NYU recommends that you quit your web browser, especially when using a shared computer.</p>
+                            <p><b>Need help?</b> Contact the <a href="http://www.nyu.edu/it/servicedesk" target="_blank">NYU IT Service Desk</a>, open 24x7 for support by email or phone.</p>
+                    </div>
+                </div>
+                <!-- /content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- End of Page Content -->
+    
+ 	</body>
+</html>
